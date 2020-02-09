@@ -2,6 +2,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <stddef.h>
 #include <string.h>
 #include <stdlib.h>
@@ -82,7 +83,7 @@ enum event_type {
 struct event_property {
   size_t offset;
   const char* name;
-  bool (*callback)(const struct event_property* prop, size_t size, char dest[size], void* value);
+  bool (*callback)(const struct event_property* prop, void* value);
 };
 
 struct event_property_fmt {
@@ -99,19 +100,22 @@ struct event {
   const struct event_property*const* property;
 };
 
-static bool get_fmt(const struct event_property* prop, size_t size, char dest[size], void* value){
+static bool get_fmt(const struct event_property* prop, void* value){
   const struct event_property_fmt* pf = container_of(prop, struct event_property_fmt, super);
+  char buf[64] = {0};
   switch(pf->fmt_mod){
-    case TF_INT: return snprintf(dest, size, pf->fmt, *(int*)value) > 0; break;
-    case TF_SHORT: return snprintf(dest, size, pf->fmt, *(short*)value) > 0; break;
-    case TF_LONG: return snprintf(dest, size, pf->fmt, *(long*)value) > 0; break;
+    case TF_INT  : snprintf(buf, sizeof(buf), pf->fmt, *(int  *)value); break;
+    case TF_SHORT: snprintf(buf, sizeof(buf), pf->fmt, *(short*)value); break;
+    case TF_LONG : snprintf(buf, sizeof(buf), pf->fmt, *(long *)value); break;
+    default: return false;
   }
-  return false;
+  setenv(prop->name, buf, true);
+  return true;
 }
 
-static bool get_atom(const struct event_property* prop, size_t size, char dest[size], void* value){
+static bool get_atom(const struct event_property* prop, void* value){
   char* name = XGetAtomName(display, *(Atom*)value);
-  snprintf(dest, size, "%s", name);
+  setenv(prop->name, name, true);
   XFree(name);
   return true;
 }
@@ -244,9 +248,7 @@ int main(int argc, char* argv[]){
     setenv("type", e->name, true);
     for(size_t i=0; i<e->size; i++){
       const struct event_property* property = e->property[i];
-      static char buf[1024];
-      property->callback(property, sizeof(buf), buf, ((char*)&event)+property->offset);
-      setenv(property->name, buf, true);
+      property->callback(property, ((char*)&event)+property->offset);
     }
     execvp(cmd[0], cmd);
     abort();

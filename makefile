@@ -1,5 +1,7 @@
 LDFLAGS+=-lX11 -lXrandr
-CCFLAGS=-c99 -Wall -Wextra -pedantic -Werror
+CFLAGS+=-std=c99 -Wall -Wextra -pedantic -Werror
+CFLAGS+=-Os -ffunction-sections -fdata-sections -Wl,--gc-sections
+CFLAGS+=-D_DEFAULT_SOURCE
 
 PREFIX=/usr
 
