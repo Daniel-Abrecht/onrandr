@@ -1,0 +1,11 @@
+Source: onrandr
+Section: misc
+Priority: optional
+Maintainer: Daniel Abrecht <dpa@colibri.danielabrecht.ch>
+Build-Depends: debhelper (>= 11)
+Standards-Version: 4.1.3
+
+Package: onrandr
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: program for reacting to xrandr events
