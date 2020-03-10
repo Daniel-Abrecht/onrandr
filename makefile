@@ -1,4 +1,4 @@
-LDFLAGS+=-lX11 -lXrandr
+LDLIBS+=-lX11 -lXrandr
 CFLAGS+=-std=c99 -Wall -Wextra -pedantic -Werror
 CFLAGS+=-Os -ffunction-sections -fdata-sections -Wl,--gc-sections
 CFLAGS+=-D_DEFAULT_SOURCE
